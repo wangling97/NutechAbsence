@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">ServiceTest</string>
+    <string name="base_url">http://103.135.215.100/dev/api/v1/</string>
+
+    <string name="connection_available">You has network connectivity.</string>
+    <string name="connection_not_available">You don`t have any network connectivity.</string>
+
+    <string name="mock_setting">You tried to spoofing the GPS location.</string>
+    <string name="mock_apps">Your phone may have Fake GPS Apps.</string>
+</resources>
