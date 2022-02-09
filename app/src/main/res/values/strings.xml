@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ServiceTest</string>
+    <string name="app_name">NutechApps</string>
     <string name="base_url">http://103.135.215.100/dev/api/v1/</string>
 
     <string name="connection_available">You has network connectivity.</string>
