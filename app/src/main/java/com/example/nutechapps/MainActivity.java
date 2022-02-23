@@ -130,7 +130,8 @@ public class MainActivity extends BaseActivity {
                                                 finish();
                                             } catch (IOException | JSONException e) {
                                                 e.printStackTrace();
-                                                showToast(MainActivity.this, e.getMessage(), "short");
+                                                Toast toast = Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT);
+                                                toast.show();
                                             }
                                         }
                                     }
@@ -140,7 +141,8 @@ public class MainActivity extends BaseActivity {
                                         stopProgressDialog(MainActivity.this);
 
                                         t.printStackTrace();
-                                        showToast(MainActivity.this, t.getMessage(), "short");
+                                        Toast toast = Toast.makeText(MainActivity.this, t.getMessage(), Toast.LENGTH_SHORT);
+                                        toast.show();
                                     }
                                 });
                             } else {
@@ -153,7 +155,8 @@ public class MainActivity extends BaseActivity {
                 }
             } catch (Exception e){
                 e.printStackTrace();
-                showToast(MainActivity.this, e.getMessage(), "short");
+                Toast toast = Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT);
+                toast.show();
             }
         });
     }
@@ -191,7 +194,8 @@ public class MainActivity extends BaseActivity {
         }
 
         this.doubleBackToExitPressedOnce = true;
-        showToast(this, "Please click BACK again to exit", "short");
+        Toast toast = Toast.makeText(MainActivity.this, "Please click BACK again to exit", Toast.LENGTH_SHORT);
+        toast.show();
         new Handler(Looper.getMainLooper()).postDelayed(() -> doubleBackToExitPressedOnce=false, 2000);
     }
 }

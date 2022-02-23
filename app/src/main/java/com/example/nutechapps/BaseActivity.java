@@ -34,6 +34,7 @@ import com.example.nutechapps.services.NetworkChangeReceiver;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +54,27 @@ public class BaseActivity extends AppCompatActivity {
 
     public String getAndroidRelease() {
         return Build.VERSION.RELEASE;
+    }
+
+    public static boolean isRooted(Context context) {
+        boolean isEmulator = isEmulator(context);
+        String buildTags = Build.TAGS;
+        if (!isEmulator && buildTags != null && buildTags.contains("test-keys")) {
+            return true;
+        } else {
+            File file = new File("/system/app/Superuser.apk");
+            if (file.exists()) {
+                return true;
+            } else {
+                file = new File("/system/xbin/su");
+                return !isEmulator && file.exists();
+            }
+        }
+    }
+
+    private static boolean isEmulator(Context context) {
+        String androidId = Settings.Secure.getString(context.getContentResolver(), "android_id");
+        return "sdk".equals(Build.PRODUCT) || "google_sdk".equals(Build.PRODUCT) || androidId == null;
     }
 
     // Show Toast
@@ -86,7 +108,7 @@ public class BaseActivity extends AppCompatActivity {
             return false;
         }
         else {
-            Toast toast = Toast.makeText(this, R.string.mock_setting, Toast.LENGTH_SHORT);
+            Toast toast = Toast.makeText(this, "You tried to spoofing the GPS location.", Toast.LENGTH_SHORT);
             toast.show();
             return true;
         }
@@ -217,12 +239,16 @@ public class BaseActivity extends AppCompatActivity {
      * Process to check app using mock setting
      ******************************************/
     protected ArrayList<String> whiteListPackage = new ArrayList<>();
+    protected ArrayList<String> blockedApps = new ArrayList<>();
 
     public boolean areThereMockPermissionApps() {
         int count = 0;
 
         // Set Whitelist Package
         whiteListPackage.add("com.example.nutech");
+        whiteListPackage.add("com.nutech.app.maintenance");
+        whiteListPackage.add("com.dev.nutech");
+        whiteListPackage.add("com.example.servicetest");
 
         PackageManager pm = this.getPackageManager();
         List<ApplicationInfo> packages = pm.getInstalledApplications(PackageManager.GET_META_DATA);
@@ -238,6 +264,7 @@ public class BaseActivity extends AppCompatActivity {
                     for (String requestedPermission : requestedPermissions) {
                         if (requestedPermission.equals("android.permission.ACCESS_MOCK_LOCATION") && !applicationInfo.packageName.equals(this.getPackageName())) {
                             if (!whiteListPackage.contains(this.getPackageName())) {
+                                blockedApps.add(this.getPackageName());
                                 count++;
                             }
                         }
@@ -249,7 +276,7 @@ public class BaseActivity extends AppCompatActivity {
         }
 
         if (count > 0) {
-            showToast(this, String.valueOf(R.string.mock_apps), "short");
+            showToast(this, "Your phone may have Fake GPS Apps. (" + blockedApps.toString() + ")", "short");
             return true;
         } else {
             return false;

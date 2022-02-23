@@ -88,7 +88,11 @@ public class AbsencesActivity extends BaseActivity {
 
         if (profile_pic != "") {
             ImageView absencePic = findViewById(R.id.absencePic);
-            Picasso.get().load(profile_pic).into(absencePic);
+            try {
+                Picasso.get().load(profile_pic).into(absencePic);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         TextView absenceUser = findViewById(R.id.absenceUser);
@@ -214,55 +218,60 @@ public class AbsencesActivity extends BaseActivity {
                             if (!isMockSettingsON()) {
                                 String token = preferences.getString("token", null);
                                 schedule_id = preferences.getString("schedule_id", null);
-                                latitude = preferences.getString("latitude", null);
-                                longitude = preferences.getString("longitude", null);
+                                latitude = (preferences.getString("latitude", null) != null) ? preferences.getString("latitude", null) : "";
+                                longitude = (preferences.getString("longitude", null) != null) ? preferences.getString("longitude", null) : "";
 
-                                JSONObject payload = new JSONObject();
-                                try {
-                                    payload.put("schedule_id", schedule_id);
-                                    payload.put("latitude", latitude);
-                                    payload.put("longitude", longitude);
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                    showToast(AbsencesActivity.this, e.getMessage(), "short");
-                                }
+                                if (!latitude.equals("") && !longitude.equals("")) {
+                                    JSONObject payload = new JSONObject();
+                                    try {
+                                        payload.put("schedule_id", schedule_id);
+                                        payload.put("latitude", latitude);
+                                        payload.put("longitude", longitude);
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                        showToast(AbsencesActivity.this, e.getMessage(), "short");
+                                    }
 
-                                Call<BasicPost> absenOutCheckPostCall = scheduleInterface.absenceOutCheckPostCall(token, payload.toString());
-                                absenOutCheckPostCall.enqueue(new Callback<BasicPost>() {
-                                    @Override
-                                    public void onResponse(Call<BasicPost> call, Response<BasicPost> response) {
-                                        if (response.code() == 200) {
-                                            if (response.body().getStatus()) {
-                                                askCameraPermissions();
+                                    Call<BasicPost> absenOutCheckPostCall = scheduleInterface.absenceOutCheckPostCall(token, payload.toString());
+                                    absenOutCheckPostCall.enqueue(new Callback<BasicPost>() {
+                                        @Override
+                                        public void onResponse(Call<BasicPost> call, Response<BasicPost> response) {
+                                            if (response.code() == 200) {
+                                                if (response.body().getStatus()) {
+                                                    askCameraPermissions();
+                                                } else {
+                                                    stopProgressDialog(AbsencesActivity.this);
+                                                    Toast toast = Toast.makeText(AbsencesActivity.this, response.body().getMessage(), Toast.LENGTH_SHORT);
+                                                    toast.show();
+                                                }
                                             } else {
                                                 stopProgressDialog(AbsencesActivity.this);
-                                                Toast toast = Toast.makeText(AbsencesActivity.this, response.body().getMessage(), Toast.LENGTH_SHORT);
-                                                toast.show();
-                                            }
-                                        } else {
-                                            stopProgressDialog(AbsencesActivity.this);
-                                            try {
-                                                JSONObject object = new JSONObject(response.errorBody().string());
-                                                Toast toast = Toast.makeText(AbsencesActivity.this, object.getString("message"), Toast.LENGTH_SHORT);
-                                                toast.show();
+                                                try {
+                                                    JSONObject object = new JSONObject(response.errorBody().string());
+                                                    Toast toast = Toast.makeText(AbsencesActivity.this, object.getString("message"), Toast.LENGTH_SHORT);
+                                                    toast.show();
 
-                                                startActivity(new Intent(AbsencesActivity.this, LoginActivity.class));
-                                                finish();
-                                            } catch (IOException | JSONException e) {
-                                                e.printStackTrace();
-                                                showToast(AbsencesActivity.this, e.getMessage(), "short");
+                                                    startActivity(new Intent(AbsencesActivity.this, LoginActivity.class));
+                                                    finish();
+                                                } catch (IOException | JSONException e) {
+                                                    e.printStackTrace();
+                                                    showToast(AbsencesActivity.this, e.getMessage(), "short");
+                                                }
                                             }
                                         }
-                                    }
 
-                                    @Override
-                                    public void onFailure(Call<BasicPost> call, Throwable t) {
-                                        stopProgressDialog(AbsencesActivity.this);
+                                        @Override
+                                        public void onFailure(Call<BasicPost> call, Throwable t) {
+                                            stopProgressDialog(AbsencesActivity.this);
 
-                                        t.printStackTrace();
-                                        showToast(AbsencesActivity.this, t.getMessage(), "short");
-                                    }
-                                });
+                                            t.printStackTrace();
+                                            showToast(AbsencesActivity.this, t.getMessage(), "short");
+                                        }
+                                    });
+                                } else {
+                                    stopProgressDialog(AbsencesActivity.this);
+                                    showToast(AbsencesActivity.this, "Sorry the system couldn't get your point location, please try again in a few seconds.", "long");
+                                }
                             } else {
                                 stopProgressDialog(AbsencesActivity.this);
                             }

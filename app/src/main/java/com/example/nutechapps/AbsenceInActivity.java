@@ -19,6 +19,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -70,6 +71,12 @@ public class AbsenceInActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_absence_in);
+
+        View btnBackAbsenceIn = findViewById(R.id.btn_back_absence_in);
+        btnBackAbsenceIn.setOnClickListener(view -> {
+            startActivity(new Intent(AbsenceInActivity.this, AbsencesActivity.class));
+            finish();
+        });
 
         radioAbsenceGroup = findViewById(R.id.radioAbsence);
         radioAbsenceGroup.setOnCheckedChangeListener((radioGroup, i) -> {
@@ -145,7 +152,7 @@ public class AbsenceInActivity extends BaseActivity {
                                             submitValid = true;
                                         } else {
                                             stopProgressDialog(AbsenceInActivity.this);
-                                            showToast(AbsenceInActivity.this, "Keterangan Wajib Diisi.", "short");
+                                            showToast(AbsenceInActivity.this, "Note Description Required.", "short");
                                         }
                                     } else {
                                         submitValid = true;
@@ -162,7 +169,7 @@ public class AbsenceInActivity extends BaseActivity {
 
                                             MultipartBody.Part filePart = MultipartBody.Part.createFormData("foto_absen", compressImage.getName(), RequestBody.create(MediaType.parse("image/*"), compressImage));
 
-                                            Call<BasicPost> submitAbsenInCheckPostCall = scheduleInterface.submitAbsenceInPostCall(token, schedule_idPart, latitudePart, longitudePart, statusPart, notePart, filePart);
+                                            Call<BasicPost> submitAbsenInCheckPostCall = scheduleInterface.submitAbsenceInPostCall(token, schedule_idPart, latitudePart, longitudePart, notePart, statusPart, filePart);
                                             submitAbsenInCheckPostCall.enqueue(new Callback<BasicPost>() {
                                                 @Override
                                                 public void onResponse(Call<BasicPost> call, Response<BasicPost> response) {
@@ -206,7 +213,7 @@ public class AbsenceInActivity extends BaseActivity {
                                         }
                                     } else {
                                         stopProgressDialog(AbsenceInActivity.this);
-                                        showToast(AbsenceInActivity.this, "Maaf sistem belum bisa mendapatkan titik lokasi Anda, silahkan coba beberapa detik lagi.", "long");
+                                        showToast(AbsenceInActivity.this, "Sorry the system couldn't get your point location, please try again in a few seconds.", "long");
                                     }
                                 }
                                 else {
