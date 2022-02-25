@@ -308,7 +308,14 @@ public class AbsenceInActivity extends BaseActivity {
     }
 
     private void dispatchTakePictureIntent() {
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        Intent takePictureIntent;
+
+        if(Integer.parseInt(getAndroidSdk()) <= 23) {
+            takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        } else {
+            takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE_SECURE);
+        }
+
         // Ensure that there's a camera activity to handle the intent
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
             // Create the File where the photo should go

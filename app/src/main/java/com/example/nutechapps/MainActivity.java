@@ -159,6 +159,12 @@ public class MainActivity extends BaseActivity {
                 toast.show();
             }
         });
+
+        // Menu Profile
+        MaterialCardView menuProfile = findViewById(R.id.menu_profile);
+        menuProfile.setOnClickListener(view -> {
+            startActivity(new Intent(MainActivity.this, ProfileActivity.class));
+        });
     }
 
     @Override

@@ -1,21 +1,15 @@
 package com.example.nutechapps;
 
 import android.content.Intent;
-import android.support.design.card.MaterialCardView;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-public class ProfileActivity extends BaseActivity {
+public class ResetPasswordActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_profile);
-
-        MaterialCardView menuResetPassword = findViewById(R.id.menu_reset_password);
-        menuResetPassword.setOnClickListener(view -> {
-            startActivity(new Intent(ProfileActivity.this, ResetPasswordActivity.class));
-        });
+        setContentView(R.layout.activity_reset_password);
     }
 
     @Override
@@ -27,7 +21,7 @@ public class ProfileActivity extends BaseActivity {
         // Validate token (if token not valid, redirect into LoginActivity)
         validateToken(status -> {
             if (!status) {
-                startActivity(new Intent(ProfileActivity.this, LoginActivity.class));
+                startActivity(new Intent(ResetPasswordActivity.this, LoginActivity.class));
                 finish();
             }
         });

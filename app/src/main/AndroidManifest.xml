@@ -25,7 +25,12 @@
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.ServiceTest">
+        android:theme="@style/Theme.ServiceTest"
+        android:hardwareAccelerated="false"
+        android:largeHeap="true">
+        <activity
+            android:name=".ResetPasswordActivity"
+            android:exported="false" />
         <activity
             android:name=".ProfileActivity"
             android:exported="false" />
