@@ -163,7 +163,8 @@
             android:layout_height="90dp"
             android:orientation="horizontal"
             android:weightSum="2"
-            android:layout_marginHorizontal="15dp">
+            android:layout_marginHorizontal="15dp"
+            android:visibility="gone">
 
             <android.support.design.card.MaterialCardView
                 android:id="@+id/menu_profile"
