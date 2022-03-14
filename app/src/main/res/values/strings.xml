@@ -2,9 +2,9 @@
     <string name="app_name">NutechApps</string>
     <string name="base_url">http://103.135.215.100/dev/api/v1/</string>
 
-    <string name="connection_available">You has network connectivity.</string>
-    <string name="connection_not_available">You don`t have any network connectivity.</string>
+    <string name="connection_available">Anda memiliki konektivitas jaringan.</string>
+    <string name="connection_not_available">Anda tidak memiliki konektivitas jaringan.</string>
 
-    <string name="mock_setting">You tried to spoofing the GPS location.</string>
-    <string name="mock_apps">Your phone may have Fake GPS Apps.</string>
+    <string name="mock_setting">Anda mencoba memalsukan lokasi GPS.</string>
+    <string name="mock_apps">Ponsel Anda mungkin memiliki Aplikasi GPS Palsu.</string>
 </resources>

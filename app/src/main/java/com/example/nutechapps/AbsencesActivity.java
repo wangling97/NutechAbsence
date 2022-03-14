@@ -7,19 +7,19 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Environment;
+import android.os.StatFs;
 import android.provider.MediaStore;
-import android.support.annotation.Nullable;
-import android.support.design.card.MaterialCardView;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.FileProvider;
+import androidx.annotation.Nullable;
+import com.google.android.material.card.MaterialCardView;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -39,7 +39,6 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -70,6 +69,8 @@ public class AbsencesActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_absences);
+
+        detectMemoriFull(AbsencesActivity.this);
 
         preferences = getSharedPreferences("MY_APP", Context.MODE_PRIVATE);
         scheduleInterface = ApiClient.getRetrofit().create(ScheduleInterface.class);
@@ -270,7 +271,7 @@ public class AbsencesActivity extends BaseActivity {
                                     });
                                 } else {
                                     stopProgressDialog(AbsencesActivity.this);
-                                    showToast(AbsencesActivity.this, "Sorry the system couldn't get your point location, please try again in a few seconds.", "long");
+                                    showToast(AbsencesActivity.this, "Maaf sistem tidak bisa mendapatkan lokasi poin Anda, silakan coba lagi dalam beberapa detik.", "long");
                                 }
                             } else {
                                 stopProgressDialog(AbsencesActivity.this);
@@ -317,7 +318,7 @@ public class AbsencesActivity extends BaseActivity {
                     if (imageFile != null) {
                         sendData();
                     } else {
-                        Toast.makeText(AbsencesActivity.this, "Please input picture first.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(AbsencesActivity.this, "Harap masukkan foto terlebih dahulu.", Toast.LENGTH_SHORT).show();
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -395,6 +396,7 @@ public class AbsencesActivity extends BaseActivity {
             compressImage = new File(String.valueOf(finalFile));
         }catch (IOException e){
             e.printStackTrace();
+            Log.d(TAG, "Gagal : " + e.getMessage());
             showToast(AbsencesActivity.this, e.getMessage(), "short");
         }
     }
@@ -418,13 +420,13 @@ public class AbsencesActivity extends BaseActivity {
     }
 
     private void dispatchTakePictureIntent() {
-        Intent takePictureIntent;
+//        Intent takePictureIntent;
 
-        if(Integer.parseInt(getAndroidSdk()) <= 23) {
-            takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        } else {
-            takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE_SECURE);
-        }
+//        if(Integer.parseInt(getAndroidSdk()) <= 23) {
+            Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//        } else {
+//            takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE_SECURE);
+//        }
 
         // Ensure that there's a camera activity to handle the intent
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {

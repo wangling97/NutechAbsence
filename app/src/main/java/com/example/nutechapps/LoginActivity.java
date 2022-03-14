@@ -3,11 +3,14 @@ package com.example.nutechapps;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.support.design.button.MaterialButton;
-import android.support.design.widget.TextInputLayout;
+
+import com.example.nutechapps.fragments.RegistDeviceDialog;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputLayout;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.widget.TextView;
 
 import com.example.nutechapps.models.auth.AuthPost;
 import com.example.nutechapps.retrofit.ApiClient;
@@ -31,6 +34,16 @@ public class LoginActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        TextView txtAndroidId = findViewById(R.id.txtAndroidId);
+        TextView txtAndroidModel = findViewById(R.id.txtAndroidModel);
+        TextView txtAndroidVersion = findViewById(R.id.txtAndroidVersion);
+        TextView txtVersionApp = findViewById(R.id.txtVersionApp);
+
+        txtAndroidId.setText(String.format("Android ID %s", getAndroidId(LoginActivity.this)));
+        txtAndroidModel.setText(String.format("Android Model %s", getDeviceModel()));
+        txtAndroidVersion.setText(String.format("Android Version %s - (API : %s)", getAndroidRelease(), getAndroidSdk()));
+        txtVersionApp.setText(String.format("App Version %s", getVersionApp()));
 
         // Set ApiClient for authInterface
         authInterface = ApiClient.getRetrofit().create(AuthInterface.class);
@@ -76,78 +89,97 @@ public class LoginActivity extends BaseActivity {
         // Button Login Process
         MaterialButton btnMasuk = findViewById(R.id.btnMasuk);
         btnMasuk.setOnClickListener(view -> {
-            showProgressDialog(LoginActivity.this);
+            if (isRooted(LoginActivity.this)) {
+                showToast(LoginActivity.this, "Perangkat Anda tidak mendukung untuk menggunakan aplikasi ini!", "long");
+            } else {
+                showProgressDialog(LoginActivity.this);
 
-            // Get text from input and set into local variabel
-            String loginUsernameText = loginUsername.getEditText().getText().toString();
-            String loginPasswordText = loginPassword.getEditText().getText().toString();
+                // Get text from input and set into local variabel
+                String loginUsernameText = loginUsername.getEditText().getText().toString();
+                String loginPasswordText = loginPassword.getEditText().getText().toString();
 
-            // If username empty
-            if (loginUsernameText.isEmpty())
-                stopProgressDialog(LoginActivity.this);
-                loginUsername.setError("Username is required.");
-
-            // If password empty
-            if (loginPasswordText.isEmpty())
-                stopProgressDialog(LoginActivity.this);
-                loginPassword.setError("Password is required.");
-
-            // If username and password not empty
-            if (!loginUsernameText.isEmpty() && !loginPasswordText.isEmpty()) {
-                // Create a payload to send to the endpoint
-                JSONObject payload = new JSONObject();
-                try {
-                    payload.put("username", loginUsernameText);
-                    payload.put("password", loginPasswordText);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    showToast(LoginActivity.this, e.getMessage(), "short");
+                // If username empty
+                if (loginUsernameText.isEmpty()) {
+                    stopProgressDialog(LoginActivity.this);
+                    loginUsername.setError("Username wajib diisi.");
                 }
 
-                // Call login endpoint and send the payload
-                Call<AuthPost> authPostCall = authInterface.authPostCall(payload.toString());
-                authPostCall.enqueue(new Callback<AuthPost>() {
-                    @Override
-                    public void onResponse(Call<AuthPost> call, Response<AuthPost> response) {
-                        stopProgressDialog(LoginActivity.this);
+                // If password empty
+                if (loginPasswordText.isEmpty()) {
+                    stopProgressDialog(LoginActivity.this);
+                    loginPassword.setError("Password wajib diisi.");
+                }
 
-                        if (response.code() == 200) {
-                            if(response.body().getStatus()) {
-                                // Get token from response
-                                String token = response.body().getToken();
+                // If username and password not empty
+                if (!loginUsernameText.isEmpty() && !loginPasswordText.isEmpty()) {
+                    // Create a payload to send to the endpoint
+                    JSONObject payload = new JSONObject();
+                    try {
+                        payload.put("username", loginUsernameText);
+                        payload.put("password", loginPasswordText);
+                        payload.put("android_id", getAndroidId(LoginActivity.this));
+                        payload.put("android_model", getDeviceModel());
+                        payload.put("android_version", getAndroidRelease());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        showToast(LoginActivity.this, e.getMessage(), "short");
+                    }
 
-                                // Put token from response in SharedPreferences
-                                SharedPreferences preferences = getSharedPreferences("MY_APP", Context.MODE_PRIVATE);
-                                preferences.edit().putString("token", token).apply();
+                    // Call login endpoint and send the payload
+                    Call<AuthPost> authPostCall = authInterface.authPostCall(payload.toString());
+                    authPostCall.enqueue(new Callback<AuthPost>() {
+                        @Override
+                        public void onResponse(Call<AuthPost> call, Response<AuthPost> response) {
+                            stopProgressDialog(LoginActivity.this);
 
-                                // Show and Redirect into MainActivity
-                                showToast(LoginActivity.this, response.body().getMessage(), "short");
-                                startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                                finish();
+                            if (response.code() == 200) {
+                                if(response.body().getStatus()) {
+                                    // Get token from response
+                                    String token = response.body().getToken();
+
+                                    // Put token from response in SharedPreferences
+                                    SharedPreferences preferences = getSharedPreferences("MY_APP", Context.MODE_PRIVATE);
+                                    preferences.edit().putString("token", token).apply();
+
+                                    // Show and Redirect into MainActivity
+                                    showToast(LoginActivity.this, response.body().getMessage(), "short");
+                                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                                    finish();
+                                } else {
+                                    showToast(LoginActivity.this, response.body().getMessage(), "short");
+                                }
                             } else {
-                                showToast(LoginActivity.this, response.body().getMessage(), "short");
-                            }
-                        } else {
-                            try {
-                                JSONObject object = new JSONObject(response.errorBody().string());
-                                showToast(LoginActivity.this, object.getString("message"), "short");
-                            } catch (IOException | JSONException e) {
-                                e.printStackTrace();
-                                showToast(LoginActivity.this, e.getMessage(), "short");
+                                try {
+                                    JSONObject object = new JSONObject(response.errorBody().string());
+                                    showToast(LoginActivity.this, object.getString("message"), "short");
+                                } catch (IOException | JSONException e) {
+                                    e.printStackTrace();
+                                    showToast(LoginActivity.this, e.getMessage(), "short");
+                                }
                             }
                         }
-                    }
 
-                    @Override
-                    public void onFailure(Call<AuthPost> call, Throwable t) {
-                        stopProgressDialog(LoginActivity.this);
+                        @Override
+                        public void onFailure(Call<AuthPost> call, Throwable t) {
+                            stopProgressDialog(LoginActivity.this);
 
-                        t.printStackTrace();
-                        showToast(LoginActivity.this, t.getMessage(), "short");
-                    }
-                });
+                            t.printStackTrace();
+                            showToast(LoginActivity.this, t.getMessage(), "short");
+                        }
+                    });
+                }
             }
         });
+
+        TextView registDevice = findViewById(R.id.registDevice);
+        registDevice.setOnClickListener(view -> {
+            OpenModal();
+        });
+    }
+
+    private void OpenModal() {
+        RegistDeviceDialog registDeviceDialog = new RegistDeviceDialog();
+        registDeviceDialog.show(getSupportFragmentManager(), "Pendaftaran Perangkat");
     }
 
     @Override

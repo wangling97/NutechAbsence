@@ -7,10 +7,10 @@ import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.design.card.MaterialCardView;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
+import com.google.android.material.card.MaterialCardView;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.appcompat.app.AlertDialog;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
@@ -102,7 +102,7 @@ public class MainActivity extends BaseActivity {
                                                 preferences.edit().putString("schedule_id", response.body().getSchedulesModels().get(0).getId()).apply();
 
                                                 Toast toast = Toast.makeText(MainActivity.this, response.body().getMessage(), Toast.LENGTH_SHORT);
-                                                toast.show();
+//                                                toast.show();
 
                                                 List<ScheduleChannel> scheduleChannels = response.body().getScheduleChannels();
                                                 ArrayList<ScheduleChannel> scheduleChannelsLists = new ArrayList<>();

@@ -11,12 +11,12 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.annotation.Nullable;
-import android.support.design.button.MaterialButton;
-import android.support.design.widget.TextInputLayout;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.FileProvider;
+import androidx.annotation.Nullable;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputLayout;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -71,6 +71,8 @@ public class AbsenceInActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_absence_in);
+
+        detectMemoriFull(AbsenceInActivity.this);
 
         View btnBackAbsenceIn = findViewById(R.id.btn_back_absence_in);
         btnBackAbsenceIn.setOnClickListener(view -> {
@@ -152,7 +154,7 @@ public class AbsenceInActivity extends BaseActivity {
                                             submitValid = true;
                                         } else {
                                             stopProgressDialog(AbsenceInActivity.this);
-                                            showToast(AbsenceInActivity.this, "Note Description Required.", "short");
+                                            showToast(AbsenceInActivity.this, "Keterangan Wajib Diisi.", "short");
                                         }
                                     } else {
                                         submitValid = true;
@@ -213,13 +215,13 @@ public class AbsenceInActivity extends BaseActivity {
                                         }
                                     } else {
                                         stopProgressDialog(AbsenceInActivity.this);
-                                        showToast(AbsenceInActivity.this, "Sorry the system couldn't get your point location, please try again in a few seconds.", "long");
+                                        showToast(AbsenceInActivity.this, "Maaf sistem tidak bisa mendapatkan lokasi poin Anda, silakan coba lagi dalam beberapa detik.", "long");
                                     }
                                 }
                                 else {
                                     stopProgressDialog(AbsenceInActivity.this);
 
-                                    Toast.makeText(AbsenceInActivity.this, "Please input picture first.", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(AbsenceInActivity.this, "Harap masukkan foto terlebih dahulu.", Toast.LENGTH_SHORT).show();
                                 }
                             } else {
                                 stopProgressDialog(AbsenceInActivity.this);
@@ -308,13 +310,13 @@ public class AbsenceInActivity extends BaseActivity {
     }
 
     private void dispatchTakePictureIntent() {
-        Intent takePictureIntent;
+//        Intent takePictureIntent;
 
-        if(Integer.parseInt(getAndroidSdk()) <= 23) {
-            takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        } else {
-            takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE_SECURE);
-        }
+//        if(Integer.parseInt(getAndroidSdk()) <= 23) {
+            Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//        } else {
+//            takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE_SECURE);
+//        }
 
         // Ensure that there's a camera activity to handle the intent
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {

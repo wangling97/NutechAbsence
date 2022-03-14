@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -25,7 +25,7 @@
             android:layout_height="wrap_content"/>
     </LinearLayout>
 
-    <android.support.design.card.MaterialCardView
+    <com.google.android.material.card.MaterialCardView
         android:id="@+id/header"
         android:layout_width="match_parent"
         android:layout_height="60dp"
@@ -73,7 +73,7 @@
 
         </LinearLayout>
 
-    </android.support.design.card.MaterialCardView>
+    </com.google.android.material.card.MaterialCardView>
 
     <ScrollView
         android:id="@+id/content"
@@ -99,14 +99,13 @@
                 android:layout_marginHorizontal="15dp"
                 android:layout_marginBottom="10dp">
 
-                <android.support.design.card.MaterialCardView
+                <com.google.android.material.card.MaterialCardView
                     android:id="@+id/menu_absence_masuk"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_gravity="center"
-                    android:layout_marginHorizontal="5dp"
-                    style="@style/CardView.Light">
+                    android:layout_marginHorizontal="5dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -120,25 +119,25 @@
                             android:layout_gravity="center_horizontal"
                             android:src="@drawable/ic_login_24" />
 
-                        <TextView
+                        <androidx.appcompat.widget.AppCompatTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center_horizontal"
                             android:text="ABSEN MASUK"
-                            android:paddingTop="5dp"/>
+                            android:paddingTop="5dp"
+                            android:textColor="#757575"/>
 
                     </LinearLayout>
 
-                </android.support.design.card.MaterialCardView>
+                </com.google.android.material.card.MaterialCardView>
 
-                <android.support.design.card.MaterialCardView
+                <com.google.android.material.card.MaterialCardView
                     android:id="@+id/menu_absence_keluar"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_gravity="center"
-                    android:layout_marginHorizontal="5dp"
-                    style="@style/CardView.Light">
+                    android:layout_marginHorizontal="5dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -152,24 +151,24 @@
                             android:layout_gravity="center_horizontal"
                             android:src="@drawable/ic_exit_to_app_24" />
 
-                        <TextView
+                        <androidx.appcompat.widget.AppCompatTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center_horizontal"
                             android:text="ABSEN KELUAR"
-                            android:paddingTop="5dp"/>
+                            android:paddingTop="5dp"
+                            android:textColor="#757575"/>
 
                     </LinearLayout>
 
-                </android.support.design.card.MaterialCardView>
+                </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>
 
-            <android.support.design.card.MaterialCardView
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                style="@style/CardView.Light">
+                android:layout_marginHorizontal="20dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -186,7 +185,7 @@
                         android:layout_marginTop="15dp"
                         android:layout_marginBottom="10dp"/>
 
-                    <TextView
+                    <androidx.appcompat.widget.AppCompatTextView
                         android:id="@+id/absenceUser"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -194,9 +193,10 @@
                         android:layout_gravity="center_horizontal"
                         android:textStyle="bold"
                         android:textSize="14sp"
-                        android:layout_marginBottom="5dp"/>
+                        android:layout_marginBottom="5dp"
+                        android:textColor="#757575"/>
 
-                    <TextView
+                    <androidx.appcompat.widget.AppCompatTextView
                         android:id="@+id/absenceUnit"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -204,26 +204,29 @@
                         android:layout_gravity="center_horizontal"
                         android:textStyle="bold"
                         android:textSize="14sp"
-                        android:layout_marginBottom="5dp"/>
+                        android:layout_marginBottom="5dp"
+                        android:textColor="#757575"/>
 
-                    <TextView
+                    <androidx.appcompat.widget.AppCompatTextView
                         android:id="@+id/absenceTime"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Jam Kerja : "
                         android:textSize="12sp"
                         android:layout_marginTop="5dp"
-                        android:layout_marginStart="10dp"/>
+                        android:layout_marginStart="10dp"
+                        android:textColor="#757575"/>
 
-                    <TextView
+                    <androidx.appcompat.widget.AppCompatTextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Lokasi Absen : "
                         android:textSize="12sp"
                         android:layout_marginTop="5dp"
-                        android:layout_marginStart="10dp"/>
+                        android:layout_marginStart="10dp"
+                        android:textColor="#757575"/>
 
-                    <android.support.v7.widget.RecyclerView
+                    <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/recyclerAbsenceLocation"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -233,10 +236,10 @@
 
                 </LinearLayout>
 
-            </android.support.design.card.MaterialCardView>
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
 
     </ScrollView>
 
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

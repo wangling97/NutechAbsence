@@ -12,9 +12,9 @@
         <entry key="..\:/Users/Nutech/AndroidStudioProjects/ServiceTest/app/src/main/res/drawable/ic_person_24.xml" value="0.21614583333333334" />
         <entry key="..\:/Users/Nutech/AndroidStudioProjects/ServiceTest/app/src/main/res/layout/activity_absence_in.xml" value="0.25" />
         <entry key="..\:/Users/Nutech/AndroidStudioProjects/ServiceTest/app/src/main/res/layout/activity_absence_menu.xml" value="0.12590579710144928" />
-        <entry key="..\:/Users/Nutech/AndroidStudioProjects/ServiceTest/app/src/main/res/layout/activity_absences.xml" value="0.22" />
-        <entry key="..\:/Users/Nutech/AndroidStudioProjects/ServiceTest/app/src/main/res/layout/activity_login.xml" value="0.25" />
-        <entry key="..\:/Users/Nutech/AndroidStudioProjects/ServiceTest/app/src/main/res/layout/activity_main.xml" value="0.25" />
+        <entry key="..\:/Users/Nutech/AndroidStudioProjects/ServiceTest/app/src/main/res/layout/activity_absences.xml" value="0.25" />
+        <entry key="..\:/Users/Nutech/AndroidStudioProjects/ServiceTest/app/src/main/res/layout/activity_login.xml" value="0.33" />
+        <entry key="..\:/Users/Nutech/AndroidStudioProjects/ServiceTest/app/src/main/res/layout/activity_main.xml" value="0.33" />
         <entry key="..\:/Users/Nutech/AndroidStudioProjects/ServiceTest/app/src/main/res/layout/activity_profile.xml" value="0.25" />
         <entry key="..\:/Users/Nutech/AndroidStudioProjects/ServiceTest/app/src/main/res/layout/activity_reset_password.xml" value="0.15534420289855072" />
         <entry key="..\:/Users/Nutech/AndroidStudioProjects/ServiceTest/app/src/main/res/layout/item_schedules_channel.xml" value="0.2" />
@@ -22,6 +22,14 @@
         <entry key="..\:/Users/Nutech/AndroidStudioProjects/ServiceTest/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.21614583333333334" />
         <entry key="..\:/Users/Nutech/AndroidStudioProjects/ServiceTest/app/src/main/res/xml/network_security_config.xml" value="0.12590579710144928" />
         <entry key="..\:/Users/Nutech/AndroidStudioProjects/ServiceTest/app/src/main/res/xml/provider_path.xml" value="0.11458333333333333" />
+        <entry key="..\:/Users/Nutech/AndroidStudioProjects/ServiceTestAndroidX/app/src/main/res/layout/activity_absence_in.xml" value="0.14673913043478262" />
+        <entry key="..\:/Users/Nutech/AndroidStudioProjects/ServiceTestAndroidX/app/src/main/res/layout/activity_absences.xml" value="0.14673913043478262" />
+        <entry key="..\:/Users/Nutech/AndroidStudioProjects/ServiceTestAndroidX/app/src/main/res/layout/activity_login.xml" value="0.33" />
+        <entry key="..\:/Users/Nutech/AndroidStudioProjects/ServiceTestAndroidX/app/src/main/res/layout/activity_main.xml" value="0.3254237288135593" />
+        <entry key="..\:/Users/Nutech/AndroidStudioProjects/ServiceTestAndroidX/app/src/main/res/layout/activity_profile.xml" value="0.14673913043478262" />
+        <entry key="..\:/Users/Nutech/AndroidStudioProjects/ServiceTestAndroidX/app/src/main/res/layout/activity_reset_password.xml" value="0.14673913043478262" />
+        <entry key="..\:/Users/Nutech/AndroidStudioProjects/ServiceTestAndroidX/app/src/main/res/layout/item_schedules_channel.xml" value="0.14673913043478262" />
+        <entry key="..\:/Users/Nutech/AndroidStudioProjects/ServiceTestAndroidX/app/src/main/res/layout/modal_regist_device.xml" value="0.22" />
       </map>
     </option>
   </component>

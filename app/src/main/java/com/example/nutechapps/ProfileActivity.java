@@ -1,8 +1,8 @@
 package com.example.nutechapps;
 
 import android.content.Intent;
-import android.support.design.card.MaterialCardView;
-import android.support.v7.app.AppCompatActivity;
+import com.google.android.material.card.MaterialCardView;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 
 public class ProfileActivity extends BaseActivity {

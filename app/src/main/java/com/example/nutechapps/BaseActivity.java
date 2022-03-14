@@ -13,10 +13,12 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.os.Build;
+import android.os.Environment;
 import android.os.IBinder;
+import android.os.StatFs;
 import android.provider.Settings;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -47,6 +49,10 @@ public class BaseActivity extends AppCompatActivity {
 
     private final String TAG = "BaseActivity";
 
+    public String getAndroidId(Context context) {
+        return Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+    }
+
     public String getAndroidSdk() {
         int sdkVersion = Build.VERSION.SDK_INT;
         return String.valueOf(sdkVersion);
@@ -54,6 +60,14 @@ public class BaseActivity extends AppCompatActivity {
 
     public String getAndroidRelease() {
         return Build.VERSION.RELEASE;
+    }
+
+    public String getDeviceModel() {
+        return android.os.Build.DEVICE;
+    }
+
+    public String getVersionApp() {
+        return BuildConfig.VERSION_NAME;
     }
 
     public static boolean isRooted(Context context) {
@@ -77,6 +91,21 @@ public class BaseActivity extends AppCompatActivity {
         return "sdk".equals(Build.PRODUCT) || "google_sdk".equals(Build.PRODUCT) || androidId == null;
     }
 
+    public void detectMemoriFull(Context context) {
+        StatFs stat = new StatFs(Environment.getExternalStorageDirectory().getPath());
+        long bytesAvailable;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            bytesAvailable = stat.getBlockSizeLong() * stat.getAvailableBlocksLong();
+        } else {
+            bytesAvailable = (long)stat.getBlockSize() * (long)stat.getAvailableBlocks();
+        }
+        long megAvailable = bytesAvailable / (1024 * 1024);
+
+        if (megAvailable < 100) {
+            showToast(context, "Peringatan: Sepertinya memori internal Anda hampir penuh, mohon periksa kapasitas memori internal Anda terlebih dahulu", "long");
+        }
+    }
+
     // Show Toast
     public void showToast(Context context, String msg, String length) {
         if (length.equals("long"))
@@ -89,8 +118,8 @@ public class BaseActivity extends AppCompatActivity {
     public void showSettingsAlert(){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setCancelable(true);
-        builder.setTitle("GPS Settings");
-        builder.setMessage("GPS is not enabled. Do you want to go to settings menu?");
+        builder.setTitle("Pengaturan GPS");
+        builder.setMessage("GPS tidak diaktifkan. Apakah Anda ingin pergi ke menu pengaturan?");
         builder.setPositiveButton("Settings",
                 (dialogInterface, i) -> {
                     Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
@@ -108,7 +137,7 @@ public class BaseActivity extends AppCompatActivity {
             return false;
         }
         else {
-            Toast toast = Toast.makeText(this, "You tried to spoofing the GPS location.", Toast.LENGTH_SHORT);
+            Toast toast = Toast.makeText(this, "Anda mencoba memalsukan lokasi GPS.", Toast.LENGTH_SHORT);
             toast.show();
             return true;
         }
@@ -276,7 +305,7 @@ public class BaseActivity extends AppCompatActivity {
         }
 
         if (count > 0) {
-            showToast(this, "Your phone may have Fake GPS Apps. (" + blockedApps.toString() + ")", "short");
+            showToast(this, "Ponsel Anda mungkin memiliki Aplikasi GPS Palsu. (" + blockedApps.toString() + ")", "short");
             return true;
         } else {
             return false;
