@@ -13,6 +13,7 @@ import android.os.IBinder;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -108,6 +109,7 @@ public class LocationService extends Service {
                 }
 
                 SharedPreferences preferences = getSharedPreferences("MY_APP", Context.MODE_PRIVATE);
+
                 preferences.edit().putString("latitude", latitude).apply();
                 preferences.edit().putString("longitude", longitude).apply();
 

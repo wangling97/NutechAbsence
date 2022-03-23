@@ -1,15 +1,20 @@
 package com.example.nutechapps;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 
 import com.example.nutechapps.fragments.RegistDeviceDialog;
+import com.google.android.gms.auth.GooglePlayServicesAvailabilityException;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputLayout;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.widget.TextView;
 
 import com.example.nutechapps.models.auth.AuthPost;
@@ -29,11 +34,15 @@ public class LoginActivity extends BaseActivity {
 
     private AuthInterface authInterface;
     private TextInputLayout loginUsername, loginPassword;
+    private SharedPreferences preferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        preferences = getSharedPreferences("MY_APP", Context.MODE_PRIVATE);
+        checkGooglePlayServices(LoginActivity.this);
 
         TextView txtAndroidId = findViewById(R.id.txtAndroidId);
         TextView txtAndroidModel = findViewById(R.id.txtAndroidModel);
@@ -193,6 +202,8 @@ public class LoginActivity extends BaseActivity {
             if (status) {
                 startActivity(new Intent(LoginActivity.this, MainActivity.class));
                 finish();
+            } else {
+                preferences.edit().putString("token", null).apply();
             }
         });
     }

@@ -6,7 +6,7 @@ import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 public class ApiClient {
 
-    public static final String BASE_URL = "http://103.135.215.100/dev/api/v1/mobile/";
+    public static final String BASE_URL = "https://ops.nutech-integrasi.com/api/v1/mobile/";
     public static Retrofit retrofit;
 
     public static Retrofit getRetrofit() {

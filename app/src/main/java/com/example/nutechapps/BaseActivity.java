@@ -1,9 +1,11 @@
 package com.example.nutechapps;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -11,14 +13,14 @@ import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.IBinder;
 import android.os.StatFs;
 import android.provider.Settings;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -26,12 +28,20 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import com.example.nutechapps.models.auth.AuthPost;
 import com.example.nutechapps.retrofit.ApiClient;
 import com.example.nutechapps.retrofit.interfaces.auth.AuthInterface;
 import com.example.nutechapps.retrofit.interfaces.auth.TokenCallback;
 import com.example.nutechapps.services.LocationService;
 import com.example.nutechapps.services.NetworkChangeReceiver;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -131,6 +141,40 @@ public class BaseActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    public boolean checkGooglePlayServices(Activity activity) {
+        final int status = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(activity);
+        if (status != ConnectionResult.SUCCESS) {
+            Log.d("PlayService", GoogleApiAvailability.getInstance().getErrorString(status));
+
+            // ask user to update google play services.
+            // show your own AlertDialog for example:
+            AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+            // set the message
+            builder.setMessage("Your Google Play Service is outdated, please update your Google Play Service for better experience")
+                    .setTitle("Do you want to update?"); // set a title
+
+            builder.setPositiveButton("Update", (dialog, id) -> {
+                // User clicked OK button
+                final String appPackageName = "com.google.android.gms";
+                try {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
+                }catch (android.content.ActivityNotFoundException anfe) {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName)));
+                }
+            });
+            builder.setNegativeButton("Cancel", (dialog, id) -> {
+                // User cancelled the dialog
+            });
+            AlertDialog dialog = builder.create();
+            dialog.show();
+            return false;
+        } else {
+            Log.d("PlayService", GoogleApiAvailability.getInstance().getErrorString(status));
+            // google play services is updated.
+            return true;
+        }
+    }
+
     // Function to check mock setting
     public boolean isMockSettingsON() {
         if (Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ALLOW_MOCK_LOCATION).equals("0")) {
@@ -224,6 +268,38 @@ public class BaseActivity extends AppCompatActivity {
      * End Network Listener Process
      *******************************/
 
+    protected LocationManager locationManager;
+
+    public boolean checkGpsPermission(Context context) {
+        try {
+            locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
+
+            // getting GPS status
+            boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+
+            // getting network status
+            boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+            if (!isGPSEnabled && !isNetworkEnabled) {
+                showSettingsAlert();
+                return false;
+            } else {
+                if(!areThereMockPermissionApps()){
+                    if (!isMockSettingsON()) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+            showToast(context, e.getMessage(), "short");
+            return false;
+        }
+    }
 
     /*********************************
      * Start Location Service Process
@@ -320,16 +396,16 @@ public class BaseActivity extends AppCompatActivity {
      * Progress Dialog or Progress Bar
      **********************************/
     public void showProgressDialog(Context context) {
-        ProgressBar progressBar = ((Activity)context).findViewById(R.id.progressBar);
-        LinearLayout progressBarBG = ((Activity)context).findViewById(R.id.progressBarBG);
+        ProgressBar progressBar = ((AppCompatActivity)context).findViewById(R.id.progressBar);
+        LinearLayout progressBarBG = ((AppCompatActivity)context).findViewById(R.id.progressBarBG);
         progressBar.setVisibility(View.VISIBLE);
         progressBarBG.setVisibility(View.VISIBLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
     }
 
     public void stopProgressDialog(Context context) {
-        ProgressBar progressBar = ((Activity)context).findViewById(R.id.progressBar);
-        LinearLayout progressBarBG = ((Activity)context).findViewById(R.id.progressBarBG);
+        ProgressBar progressBar = ((AppCompatActivity)context).findViewById(R.id.progressBar);
+        LinearLayout progressBarBG = ((AppCompatActivity)context).findViewById(R.id.progressBarBG);
         progressBar.setVisibility(View.GONE);
         progressBarBG.setVisibility(View.GONE);
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);

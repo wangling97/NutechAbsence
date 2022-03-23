@@ -5,20 +5,22 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import com.google.android.material.card.MaterialCardView;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.appcompat.app.AlertDialog;
-import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.example.nutechapps.models.schedules.CheckSchedulePost;
 import com.example.nutechapps.models.schedules.ScheduleChannel;
 import com.example.nutechapps.retrofit.ApiClient;
 import com.example.nutechapps.retrofit.interfaces.schedules.ScheduleInterface;
+import com.google.android.material.card.MaterialCardView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,15 +37,19 @@ public class MainActivity extends BaseActivity {
 
     private ScheduleInterface scheduleInterface;
     protected LocationManager locationManager;
+    private SharedPreferences preferences;
+
+    private static final int ACCESS_FINE_LOCATION_CODE = 101;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        SharedPreferences preferences = getSharedPreferences("MY_APP", Context.MODE_PRIVATE);
+        preferences = getSharedPreferences("MY_APP", Context.MODE_PRIVATE);
         scheduleInterface = ApiClient.getRetrofit().create(ScheduleInterface.class);
 
+        // Button Logout
         View btnLogout = findViewById(R.id.btnLogout);
         btnLogout.setOnClickListener(view -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
@@ -70,101 +76,86 @@ public class MainActivity extends BaseActivity {
         MaterialCardView menuAbsence = findViewById(R.id.menu_absence);
         menuAbsence.setOnClickListener(view -> {
             showProgressDialog(MainActivity.this);
-            try {
-                locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
-
-                // getting GPS status
-                boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-
-                // getting network status
-                boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-
-                if (!isGPSEnabled && !isNetworkEnabled) {
+            if (checkGpsPermission(MainActivity.this)) {
+                if (ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
                     stopProgressDialog(MainActivity.this);
-                    showSettingsAlert();
+                    ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, ACCESS_FINE_LOCATION_CODE);
                 } else {
-                    if (ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
-                        stopProgressDialog(MainActivity.this);
-                        ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 101);
-                    } else {
-                        if(!areThereMockPermissionApps()){
-                            if (!isMockSettingsON()) {
-                                String token = preferences.getString("token", null);
-
-                                Call<CheckSchedulePost> checkSchedulePostCall = scheduleInterface.checkSchedulePostCall(token);
-                                checkSchedulePostCall.enqueue(new Callback<CheckSchedulePost>() {
-                                    @Override
-                                    public void onResponse(Call<CheckSchedulePost> call, Response<CheckSchedulePost> response) {
-                                        stopProgressDialog(MainActivity.this);
-
-                                        if (response.code() == 200) {
-                                            if (response.body().getStatus()) {
-                                                preferences.edit().putString("schedule_id", response.body().getSchedulesModels().get(0).getId()).apply();
-
-                                                Toast toast = Toast.makeText(MainActivity.this, response.body().getMessage(), Toast.LENGTH_SHORT);
-//                                                toast.show();
-
-                                                List<ScheduleChannel> scheduleChannels = response.body().getScheduleChannels();
-                                                ArrayList<ScheduleChannel> scheduleChannelsLists = new ArrayList<>();
-                                                scheduleChannelsLists.addAll(scheduleChannels);
-
-                                                Intent intent = new Intent(MainActivity.this, AbsencesActivity.class);
-                                                intent.putExtra("name", response.body().getSchedulesModels().get(0).getName());
-                                                intent.putExtra("division_name", response.body().getSchedulesModels().get(0).getDivision_name());
-                                                intent.putExtra("shift_start", response.body().getSchedulesModels().get(0).getSchedule_shift_start());
-                                                intent.putExtra("shift_end", response.body().getSchedulesModels().get(0).getSchedule_shift_end());
-                                                intent.putExtra("profile_pic", response.body().getSchedulesModels().get(0).getProfile_pic());
-                                                intent.putExtra("schedule_channels", scheduleChannelsLists);
-                                                startActivity(intent);
-                                            } else {
-                                                Toast toast = Toast.makeText(MainActivity.this, response.body().getMessage(), Toast.LENGTH_SHORT);
-                                                toast.show();
-                                            }
-                                        } else {
-                                            try {
-                                                JSONObject object = new JSONObject(response.errorBody().string());
-                                                Toast toast = Toast.makeText(MainActivity.this, object.getString("message"), Toast.LENGTH_SHORT);
-                                                toast.show();
-
-                                                startActivity(new Intent(MainActivity.this, LoginActivity.class));
-                                                finish();
-                                            } catch (IOException | JSONException e) {
-                                                e.printStackTrace();
-                                                Toast toast = Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT);
-                                                toast.show();
-                                            }
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onFailure(Call<CheckSchedulePost> call, Throwable t) {
-                                        stopProgressDialog(MainActivity.this);
-
-                                        t.printStackTrace();
-                                        Toast toast = Toast.makeText(MainActivity.this, t.getMessage(), Toast.LENGTH_SHORT);
-                                        toast.show();
-                                    }
-                                });
-                            } else {
-                                stopProgressDialog(MainActivity.this);
-                            }
-                        } else {
-                            stopProgressDialog(MainActivity.this);
-                        }
-                    }
+                    call_menu_absences();
                 }
-            } catch (Exception e){
-                e.printStackTrace();
-                Toast toast = Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT);
-                toast.show();
+            } else {
+                stopProgressDialog(MainActivity.this);
             }
         });
 
         // Menu Profile
         MaterialCardView menuProfile = findViewById(R.id.menu_profile);
-        menuProfile.setOnClickListener(view -> {
-            startActivity(new Intent(MainActivity.this, ProfileActivity.class));
+        menuProfile.setOnClickListener(view -> startActivity(new Intent(MainActivity.this, ProfileActivity.class)));
+    }
+
+    private void call_menu_absences() {
+        String token = preferences.getString("token", null);
+
+        Call<CheckSchedulePost> checkSchedulePostCall = scheduleInterface.checkSchedulePostCall(token);
+        checkSchedulePostCall.enqueue(new Callback<CheckSchedulePost>() {
+            @Override
+            public void onResponse(Call<CheckSchedulePost> call, Response<CheckSchedulePost> response) {
+                stopProgressDialog(MainActivity.this);
+
+                if (response.code() == 200) {
+                    if (response.body().getStatus()) {
+                        preferences.edit().putString("schedule_id", response.body().getSchedulesModels().get(0).getId()).apply();
+
+                        List<ScheduleChannel> scheduleChannels = response.body().getScheduleChannels();
+                        ArrayList<ScheduleChannel> scheduleChannelsLists = new ArrayList<>(scheduleChannels);
+
+                        Intent intent = new Intent(MainActivity.this, AbsencesActivity.class);
+                        intent.putExtra("name", response.body().getSchedulesModels().get(0).getName());
+                        intent.putExtra("division_name", response.body().getSchedulesModels().get(0).getDivision_name());
+                        intent.putExtra("shift_start", response.body().getSchedulesModels().get(0).getSchedule_shift_start());
+                        intent.putExtra("shift_end", response.body().getSchedulesModels().get(0).getSchedule_shift_end());
+                        intent.putExtra("profile_pic", response.body().getSchedulesModels().get(0).getProfile_pic());
+                        intent.putExtra("schedule_channels", scheduleChannelsLists);
+                        startActivity(intent);
+                    } else {
+                        Toast toast = Toast.makeText(MainActivity.this, response.body().getMessage(), Toast.LENGTH_SHORT);
+                        toast.show();
+                    }
+                } else {
+                    try {
+                        JSONObject object = new JSONObject(response.errorBody().string());
+                        Toast toast = Toast.makeText(MainActivity.this, object.getString("message"), Toast.LENGTH_SHORT);
+                        toast.show();
+
+                        startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                        finish();
+                    } catch (IOException | JSONException e) {
+                        e.printStackTrace();
+                        Toast toast = Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT);
+                        toast.show();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<CheckSchedulePost> call, Throwable t) {
+                stopProgressDialog(MainActivity.this);
+
+                t.printStackTrace();
+                Toast toast = Toast.makeText(MainActivity.this, t.getMessage(), Toast.LENGTH_SHORT);
+                toast.show();
+            }
         });
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == ACCESS_FINE_LOCATION_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                call_menu_absences();
+            }
+        }
     }
 
     @Override

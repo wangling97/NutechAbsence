@@ -7,11 +7,14 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.StatFs;
 import android.provider.MediaStore;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.material.card.MaterialCardView;
 import androidx.core.app.ActivityCompat;
@@ -37,6 +40,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -55,13 +59,16 @@ public class AbsencesActivity extends BaseActivity {
 
     private final String TAG = "AbsencesActivity";
 
+    private static final int ACCESS_FINE_LOCATION_IN_CODE = 101;
+    private static final int ACCESS_FINE_LOCATION_OUT_CODE = 102;
+    private static final int CAMERA_PERM_CODE = 103;
+    private static final int CAMERA_REQUEST_CODE = 104;
+
     private ScheduleInterface scheduleInterface;
     protected LocationManager locationManager;
     private SharedPreferences preferences;
     private RecyclerView recyclerView;
 
-    private static final int CAMERA_PERM_CODE = 101;
-    private static final int CAMERA_REQUEST_CODE = 102;
     private File imageFile,compressImage;
     private String currentPhotoPath, schedule_id, latitude, longitude;
 
@@ -81,12 +88,14 @@ public class AbsencesActivity extends BaseActivity {
         String shift_end = getIntent().getStringExtra("shift_end");
         String profile_pic = getIntent().getStringExtra("profile_pic");
 
+        // Set schedule channel
         List<ScheduleChannel> schedule_channels = (ArrayList<ScheduleChannel>) getIntent().getSerializableExtra("schedule_channels");
         SchedulesChannelAdapter adapter = new SchedulesChannelAdapter(schedule_channels);
         recyclerView = findViewById(R.id.recyclerAbsenceLocation);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
 
+        // Set profile picture
         if (profile_pic != "") {
             ImageView absencePic = findViewById(R.id.absencePic);
             try {
@@ -114,83 +123,15 @@ public class AbsencesActivity extends BaseActivity {
         MaterialCardView absenceMasuk = findViewById(R.id.menu_absence_masuk);
         absenceMasuk.setOnClickListener(view -> {
             showProgressDialog(AbsencesActivity.this);
-            try {
-                locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
-
-                // getting GPS status
-                boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-
-                // getting network status
-                boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-
-                if (!isGPSEnabled && !isNetworkEnabled) {
+            if (checkGpsPermission(AbsencesActivity.this)) {
+                if (ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
                     stopProgressDialog(AbsencesActivity.this);
-                    showSettingsAlert();
+                    ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, ACCESS_FINE_LOCATION_IN_CODE);
                 } else {
-                    if (ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
-                        stopProgressDialog(AbsencesActivity.this);
-                        ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 101);
-                    } else {
-                        if(!areThereMockPermissionApps()) {
-                            if (!isMockSettingsON()) {
-                                String token = preferences.getString("token", null);
-                                schedule_id = preferences.getString("schedule_id", null);
-
-                                JSONObject payload = new JSONObject();
-                                try {
-                                    payload.put("schedule_id", schedule_id);
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                    showToast(AbsencesActivity.this, e.getMessage(), "short");
-                                }
-
-                                Call<BasicPost> absenInCheckPostCall = scheduleInterface.absenceInCheckPostCall(token, payload.toString());
-                                absenInCheckPostCall.enqueue(new Callback<BasicPost>() {
-                                    @Override
-                                    public void onResponse(Call<BasicPost> call, Response<BasicPost> response) {
-                                        stopProgressDialog(AbsencesActivity.this);
-
-                                        if (response.code() == 200) {
-                                            if (response.body().getStatus()) {
-                                                startActivity(new Intent(AbsencesActivity.this, AbsenceInActivity.class));
-                                            } else {
-                                                Toast toast = Toast.makeText(AbsencesActivity.this, response.body().getMessage(), Toast.LENGTH_SHORT);
-                                                toast.show();
-                                            }
-                                        } else {
-                                            try {
-                                                JSONObject object = new JSONObject(response.errorBody().string());
-                                                Toast toast = Toast.makeText(AbsencesActivity.this, object.getString("message"), Toast.LENGTH_SHORT);
-                                                toast.show();
-
-                                                startActivity(new Intent(AbsencesActivity.this, LoginActivity.class));
-                                                finish();
-                                            } catch (IOException | JSONException e) {
-                                                e.printStackTrace();
-                                                showToast(AbsencesActivity.this, e.getMessage(), "short");
-                                            }
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onFailure(Call<BasicPost> call, Throwable t) {
-                                        stopProgressDialog(AbsencesActivity.this);
-
-                                        t.printStackTrace();
-                                        showToast(AbsencesActivity.this, t.getMessage(), "short");
-                                    }
-                                });
-                            } else {
-                                stopProgressDialog(AbsencesActivity.this);
-                            }
-                        } else {
-                            stopProgressDialog(AbsencesActivity.this);
-                        }
-                    }
+                    call_menu_absence_in();
                 }
-            } catch (Exception e){
-                e.printStackTrace();
-                showToast(AbsencesActivity.this, e.getMessage(), "short");
+            } else {
+                stopProgressDialog(AbsencesActivity.this);
             }
         });
 
@@ -198,94 +139,184 @@ public class AbsencesActivity extends BaseActivity {
         MaterialCardView absenceKeluar = findViewById(R.id.menu_absence_keluar);
         absenceKeluar.setOnClickListener(v -> {
             showProgressDialog(AbsencesActivity.this);
-            try {
-                locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
-
-                // getting GPS status
-                boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-
-                // getting network status
-                boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-
-                if (!isGPSEnabled && !isNetworkEnabled) {
+            if (checkGpsPermission(AbsencesActivity.this)) {
+                if (ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
                     stopProgressDialog(AbsencesActivity.this);
-                    showSettingsAlert();
+                    ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, ACCESS_FINE_LOCATION_OUT_CODE);
                 } else {
-                    if (ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
-                        stopProgressDialog(AbsencesActivity.this);
-                        ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 101);
+                    call_menu_absence_out();
+                }
+            } else {
+                stopProgressDialog(AbsencesActivity.this);
+            }
+        });
+    }
+
+    private void call_menu_absence_in() {
+        String token = preferences.getString("token", null);
+        schedule_id = preferences.getString("schedule_id", null);
+
+        JSONObject payload = new JSONObject();
+        try {
+            payload.put("schedule_id", schedule_id);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            showToast(AbsencesActivity.this, e.getMessage(), "short");
+        }
+
+        Call<BasicPost> absenInCheckPostCall = scheduleInterface.absenceInCheckPostCall(token, payload.toString());
+        absenInCheckPostCall.enqueue(new Callback<BasicPost>() {
+            @Override
+            public void onResponse(Call<BasicPost> call, Response<BasicPost> response) {
+                stopProgressDialog(AbsencesActivity.this);
+
+                if (response.code() == 200) {
+                    if (response.body().getStatus()) {
+                        startActivity(new Intent(AbsencesActivity.this, AbsenceInActivity.class));
                     } else {
-                        if(!areThereMockPermissionApps()) {
-                            if (!isMockSettingsON()) {
-                                String token = preferences.getString("token", null);
-                                schedule_id = preferences.getString("schedule_id", null);
-                                latitude = (preferences.getString("latitude", null) != null) ? preferences.getString("latitude", null) : "";
-                                longitude = (preferences.getString("longitude", null) != null) ? preferences.getString("longitude", null) : "";
+                        Toast toast = Toast.makeText(AbsencesActivity.this, response.body().getMessage(), Toast.LENGTH_SHORT);
+                        toast.show();
+                    }
+                } else {
+                    try {
+                        JSONObject object = new JSONObject(response.errorBody().string());
+                        Toast toast = Toast.makeText(AbsencesActivity.this, object.getString("message"), Toast.LENGTH_SHORT);
+                        toast.show();
 
-                                if (!latitude.equals("") && !longitude.equals("")) {
-                                    JSONObject payload = new JSONObject();
-                                    try {
-                                        payload.put("schedule_id", schedule_id);
-                                        payload.put("latitude", latitude);
-                                        payload.put("longitude", longitude);
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                        showToast(AbsencesActivity.this, e.getMessage(), "short");
-                                    }
-
-                                    Call<BasicPost> absenOutCheckPostCall = scheduleInterface.absenceOutCheckPostCall(token, payload.toString());
-                                    absenOutCheckPostCall.enqueue(new Callback<BasicPost>() {
-                                        @Override
-                                        public void onResponse(Call<BasicPost> call, Response<BasicPost> response) {
-                                            if (response.code() == 200) {
-                                                if (response.body().getStatus()) {
-                                                    askCameraPermissions();
-                                                } else {
-                                                    stopProgressDialog(AbsencesActivity.this);
-                                                    Toast toast = Toast.makeText(AbsencesActivity.this, response.body().getMessage(), Toast.LENGTH_SHORT);
-                                                    toast.show();
-                                                }
-                                            } else {
-                                                stopProgressDialog(AbsencesActivity.this);
-                                                try {
-                                                    JSONObject object = new JSONObject(response.errorBody().string());
-                                                    Toast toast = Toast.makeText(AbsencesActivity.this, object.getString("message"), Toast.LENGTH_SHORT);
-                                                    toast.show();
-
-                                                    startActivity(new Intent(AbsencesActivity.this, LoginActivity.class));
-                                                    finish();
-                                                } catch (IOException | JSONException e) {
-                                                    e.printStackTrace();
-                                                    showToast(AbsencesActivity.this, e.getMessage(), "short");
-                                                }
-                                            }
-                                        }
-
-                                        @Override
-                                        public void onFailure(Call<BasicPost> call, Throwable t) {
-                                            stopProgressDialog(AbsencesActivity.this);
-
-                                            t.printStackTrace();
-                                            showToast(AbsencesActivity.this, t.getMessage(), "short");
-                                        }
-                                    });
-                                } else {
-                                    stopProgressDialog(AbsencesActivity.this);
-                                    showToast(AbsencesActivity.this, "Maaf sistem tidak bisa mendapatkan lokasi poin Anda, silakan coba lagi dalam beberapa detik.", "long");
-                                }
-                            } else {
-                                stopProgressDialog(AbsencesActivity.this);
-                            }
-                        } else {
-                            stopProgressDialog(AbsencesActivity.this);
-                        }
+                        startActivity(new Intent(AbsencesActivity.this, LoginActivity.class));
+                        finish();
+                    } catch (IOException | JSONException e) {
+                        e.printStackTrace();
+                        showToast(AbsencesActivity.this, e.getMessage(), "short");
                     }
                 }
-            } catch (Exception e){
+            }
+
+            @Override
+            public void onFailure(Call<BasicPost> call, Throwable t) {
+                stopProgressDialog(AbsencesActivity.this);
+
+                t.printStackTrace();
+                showToast(AbsencesActivity.this, t.getMessage(), "short");
+            }
+        });
+    }
+
+    private void call_menu_absence_out() {
+        String token = preferences.getString("token", null);
+        schedule_id = preferences.getString("schedule_id", null);
+        latitude = (preferences.getString("latitude", null) != null) ? preferences.getString("latitude", null) : "";
+        longitude = (preferences.getString("longitude", null) != null) ? preferences.getString("longitude", null) : "";
+
+        saveBitmapToFile(compressImage);
+
+        if (!latitude.equals("") && !longitude.equals("")) {
+            JSONObject payload = new JSONObject();
+            try {
+                payload.put("schedule_id", schedule_id);
+                payload.put("latitude", latitude);
+                payload.put("longitude", longitude);
+            } catch (JSONException e) {
                 e.printStackTrace();
                 showToast(AbsencesActivity.this, e.getMessage(), "short");
             }
-        });
+
+            Call<BasicPost> absenOutCheckPostCall = scheduleInterface.absenceOutCheckPostCall(token, payload.toString());
+            absenOutCheckPostCall.enqueue(new Callback<BasicPost>() {
+                @Override
+                public void onResponse(Call<BasicPost> call, Response<BasicPost> response) {
+                    if (response.code() == 200) {
+                        if (response.body().getStatus()) {
+                            askCameraPermissions();
+                        } else {
+                            stopProgressDialog(AbsencesActivity.this);
+                            Toast toast = Toast.makeText(AbsencesActivity.this, response.body().getMessage(), Toast.LENGTH_SHORT);
+                            toast.show();
+                        }
+                    } else {
+                        stopProgressDialog(AbsencesActivity.this);
+                        try {
+                            JSONObject object = new JSONObject(response.errorBody().string());
+                            Toast toast = Toast.makeText(AbsencesActivity.this, object.getString("message"), Toast.LENGTH_SHORT);
+                            toast.show();
+
+                            startActivity(new Intent(AbsencesActivity.this, LoginActivity.class));
+                            finish();
+                        } catch (IOException | JSONException e) {
+                            e.printStackTrace();
+                            showToast(AbsencesActivity.this, e.getMessage(), "short");
+                        }
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<BasicPost> call, Throwable t) {
+                    stopProgressDialog(AbsencesActivity.this);
+
+                    t.printStackTrace();
+                    showToast(AbsencesActivity.this, t.getMessage(), "short");
+                }
+            });
+        } else {
+            stopProgressDialog(AbsencesActivity.this);
+            showToast(AbsencesActivity.this, "Maaf sistem tidak bisa mendapatkan lokasi poin Anda, silakan coba lagi dalam beberapa detik.", "long");
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == ACCESS_FINE_LOCATION_IN_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                call_menu_absence_in();
+            }
+        } else if (requestCode == ACCESS_FINE_LOCATION_OUT_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                call_menu_absence_out();
+            }
+        }
+    }
+
+    public File saveBitmapToFile(File file){
+        try {
+            // BitmapFactory options to downsize the image
+            BitmapFactory.Options o = new BitmapFactory.Options();
+            o.inJustDecodeBounds = true;
+            o.inSampleSize = 6;
+            // factor of downsizing the image
+
+            FileInputStream inputStream = new FileInputStream(file);
+            //Bitmap selectedBitmap = null;
+            BitmapFactory.decodeStream(inputStream, null, o);
+            inputStream.close();
+
+            // The new size we want to scale to
+            final int REQUIRED_SIZE=50;
+
+            // Find the correct scale value. It should be the power of 2.
+            int scale = 1;
+            while(o.outWidth / scale / 2 >= REQUIRED_SIZE &&
+                    o.outHeight / scale / 2 >= REQUIRED_SIZE) {
+                scale *= 2;
+            }
+
+            BitmapFactory.Options o2 = new BitmapFactory.Options();
+            o2.inSampleSize = scale;
+            inputStream = new FileInputStream(file);
+
+            Bitmap selectedBitmap = BitmapFactory.decodeStream(inputStream, null, o2);
+            inputStream.close();
+
+            // here i override the original image file
+            file.createNewFile();
+            FileOutputStream outputStream = new FileOutputStream(file);
+
+            selectedBitmap.compress(Bitmap.CompressFormat.JPEG, 100 , outputStream);
+
+            return file;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private void askCameraPermissions() {
@@ -324,6 +355,10 @@ public class AbsencesActivity extends BaseActivity {
                     e.printStackTrace();
                     showToast(AbsencesActivity.this, e.getMessage(), "short");
                 }
+            } else {
+                imageFile.delete();
+                compressImage.delete();
+                stopProgressDialog(AbsencesActivity.this);
             }
         }
     }
@@ -382,7 +417,10 @@ public class AbsencesActivity extends BaseActivity {
     private void setCompressImage(Uri imageUri){
         try {
             Bitmap imageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-            File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+            File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/NutechApps");
+            if (!path.exists()) {
+                path.mkdirs();
+            }
             String filename = String.format("%d.jpg",System.currentTimeMillis());
             File finalFile = new File(path,filename);
             FileOutputStream fileOutputStream = new FileOutputStream(finalFile);
@@ -407,7 +445,11 @@ public class AbsencesActivity extends BaseActivity {
         String imageFileName = "JPEG_" + timeStamp + "_";
 
         //File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+//        File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/NutechApps");
+        if (!storageDir.exists()) {
+            storageDir.mkdirs();
+        }
         File image = File.createTempFile(
                 imageFileName,  /* prefix */
                 ".jpg",         /* suffix */
@@ -420,13 +462,7 @@ public class AbsencesActivity extends BaseActivity {
     }
 
     private void dispatchTakePictureIntent() {
-//        Intent takePictureIntent;
-
-//        if(Integer.parseInt(getAndroidSdk()) <= 23) {
-            Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//        } else {
-//            takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE_SECURE);
-//        }
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
         // Ensure that there's a camera activity to handle the intent
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {

@@ -52,7 +52,7 @@
                 <ImageView
                     android:layout_width="150dp"
                     android:layout_height="match_parent"
-                    android:src="@drawable/logo_nutech"/>
+                    app:srcCompat="@drawable/logo_nutech"/>
 
             </LinearLayout>
 
@@ -117,7 +117,7 @@
                             android:layout_width="34dp"
                             android:layout_height="34dp"
                             android:layout_gravity="center_horizontal"
-                            android:src="@drawable/ic_login_24" />
+                            app:srcCompat="@drawable/ic_login_24" />
 
                         <androidx.appcompat.widget.AppCompatTextView
                             android:layout_width="wrap_content"
@@ -149,7 +149,7 @@
                             android:layout_width="34dp"
                             android:layout_height="34dp"
                             android:layout_gravity="center_horizontal"
-                            android:src="@drawable/ic_exit_to_app_24" />
+                            app:srcCompat="@drawable/ic_exit_to_app_24" />
 
                         <androidx.appcompat.widget.AppCompatTextView
                             android:layout_width="wrap_content"
@@ -179,7 +179,7 @@
                         android:id="@+id/absencePic"
                         android:layout_width="150dp"
                         android:layout_height="150dp"
-                        android:src="@drawable/ic_launcher_foreground"
+                        app:srcCompat="@drawable/ic_launcher_foreground"
                         android:background="@color/gray"
                         android:layout_gravity="center_horizontal"
                         android:layout_marginTop="15dp"

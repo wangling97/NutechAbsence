@@ -1,23 +1,15 @@
 package com.example.nutechapps.fragments;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatDialog;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDialogFragment;
 
-import com.example.nutechapps.LoginActivity;
-import com.example.nutechapps.MainActivity;
 import com.example.nutechapps.R;
 import com.example.nutechapps.models.BasicPost;
 import com.example.nutechapps.retrofit.ApiClient;

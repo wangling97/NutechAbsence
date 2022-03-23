@@ -51,7 +51,7 @@
                 <ImageView
                     android:layout_width="150dp"
                     android:layout_height="match_parent"
-                    android:src="@drawable/logo_nutech"/>
+                    app:srcCompat="@drawable/logo_nutech"/>
 
             </LinearLayout>
 
@@ -110,7 +110,7 @@
                         android:layout_width="38dp"
                         android:layout_height="38dp"
                         android:layout_gravity="center_horizontal"
-                        android:src="@drawable/ic_person_20" />
+                        app:srcCompat="@drawable/ic_person_20" />
 
                     <androidx.appcompat.widget.AppCompatTextView
                         android:layout_width="wrap_content"
@@ -141,7 +141,7 @@
                         android:layout_width="38dp"
                         android:layout_height="38dp"
                         android:layout_gravity="center_horizontal"
-                        android:src="@drawable/ic_lock_20" />
+                        app:srcCompat="@drawable/ic_lock_20" />
 
                     <androidx.appcompat.widget.AppCompatTextView
                         android:layout_width="wrap_content"
@@ -181,7 +181,7 @@
                         android:layout_width="34dp"
                         android:layout_height="34dp"
                         android:layout_gravity="center_horizontal"
-                        android:src="@drawable/ic_card_24" />
+                        app:srcCompat="@drawable/ic_card_24" />
 
                     <androidx.appcompat.widget.AppCompatTextView
                         android:layout_width="wrap_content"
